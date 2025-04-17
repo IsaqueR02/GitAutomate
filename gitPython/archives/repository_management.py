@@ -7,6 +7,8 @@ def verificar_arquivos_modificados(repositorio):
     # Verifica se há arquivos modificados no repositório
     mudancas_arquivos = obter_mudancas_arquivos(repositorio)
     if not mudancas_arquivos:
-        print("Nenhum arquivo modificado encontrado.")
+        print("Nenhum arquivo modificado.")
         return False
-    return True
+    else:
+        print(f"Arquivos modificados: {', '.join(mudancas_arquivos)}")
+        return True

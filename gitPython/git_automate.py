@@ -14,6 +14,12 @@ import branchsManager.doPull as doPull
 def executar_comando(comando):
     processo = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     saida, erro = processo.communicate()
+    if processo.returncode != 0:
+        print(f"Erro ao executar o comando '{comando}': {erro.decode('utf-8')}")
+        return None
+    else:
+        print(f"Comando '{comando}' executado com sucesso.")
+        print(saida.decode('utf-8'))
     return saida.decode('utf-8'), erro.decode('utf-8'), processo.returncode
 
 def menu_opcoes(repositorio):
@@ -28,18 +34,50 @@ def menu_opcoes(repositorio):
         escolha = input("Digite sua escolha: ")
         
         if escolha == '1':
-            commited.gerar_mensagem_commit  # Chama sua função de commit
+            commit_arquivos(repositorio)  # Chama sua função de commit
+            break  # Saia do loop após executar
         elif escolha == '2':
             doPush.realizar_push(repositorio)  # Chama sua função de push
         elif escolha == '3':
             doPull.realizar_pull(repositorio)  # Chama sua função de pull
+            break  # Saia do loop após executar
         elif escolha == '4':
-            descommited.desfazer_commits(repositorio)  # Chama sua função para desfazer commits
+            descommited(repositorio)  # Chama sua função para desfazer commits
+            break  # Saia do loop após executar
         elif escolha == '0':
             print("Saindo do programa.")
             break
         else:
             print("Escolha inválida, tente novamente.")
+            
+# Obter arquivos alterados
+def commit_arquivos(repositorio):
+    arquivos_alterados = status.obter_mudancas_arquivos(repositorio)
+    if not arquivos_alterados:
+        print("Não há mudanças para commit.")
+        return
+    
+    # Gerar mensagem de commit
+    mensagem_commit = commited(arquivos_alterados)
+    
+    # Mostrar mensagem de commit e pedir confirmação
+    print(f"\nMensagem de commit escolhida: {mensagem_commit}")
+    while True:
+        confirmacao = input("Confirma esta mensagem de commit? (sim/não): ").lower()
+        if confirmacao in ['sim', 's']:
+            break
+        elif confirmacao in ['não', 'nao', 'n']:
+            mensagem_commit = input("Digite a nova mensagem de commit: ")
+            break
+        else:
+            print("Resposta inválida. Por favor, digite 'sim' ou 'não'.")
+    
+    # Commit das mudanças
+    try:
+        repositorio.index.commit(mensagem_commit)
+        print("Mudanças commitadas com sucesso.")
+    except GitCommandError as e:
+        print(f"Erro durante o commit: {e}")
 
 def principal(repositorio):
     try:
@@ -61,47 +99,16 @@ def principal(repositorio):
     # Git add .
     print("Executando 'git add .'")
     executar_comando("git add .")
-    
+        
     menu_opcoes(repositorio)
-
-    # Obter arquivos alterados
-    arquivos_alterados = status.obter_mudancas_arquivos(repositorio)
-    if not arquivos_alterados:
-        print("Não há mudanças para commit.")
-        return
-
-    # Gerar mensagem de commit
-    mensagem_commit = commited.gerar_mensagem_commit(arquivos_alterados)
-
-    # Mostrar mensagem de commit e pedir confirmação
-    print(f"\nMensagem de commit escolhida: {mensagem_commit}")
-
-    print(mensagem_commit)
-    while True:
-        confirmacao = input("Confirma esta mensagem de commit? (sim/não): ").lower()
-        if confirmacao in ['sim', 's']:
-            break
-        elif confirmacao in ['não', 'nao', 'n']:
-            mensagem_commit = input("Digite a nova mensagem de commit: ")
-            break
-        else:
-            print("Resposta inválida. Por favor, digite 'sim' ou 'não'.")
-
-    # Commit das mudanças
-    try:
-        repositorio.index.commit(mensagem_commit)
-        print("Mudanças commitadas com sucesso.")
-    except GitCommandError as e:
-        print(f"Erro durante o commit: {e}")
-        return
 
     # Pedir confirmação antes do push
     entrada_usuario = input("\nVocê quer fazer push das mudanças? (sim/não): ").lower()
     if entrada_usuario in ['sim', 's', 'não', 'nao', 'n']:
         doPush.realizar_push(repositorio)
 
-    if __name__ == "__main__":
-        principal(repositorio)
+if __name__ == "__main__":
+    principal(repositorio=None)
     
     ## Pontos a serem melhorados:
     # 1. Adicionar tratamento de exceções para o caso de falhas no push ou pull.
