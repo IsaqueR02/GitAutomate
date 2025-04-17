@@ -1,1 +1,1 @@
-# GitAutomator
+# GitAutomate
