@@ -2,8 +2,8 @@
 import os
 import sys
 from colorama import Fore, Style
-import git
 from git import Repo
+import git
 
 
 def obter_mudancas_arquivos(repositorio):
@@ -41,11 +41,20 @@ def selecionar_repositorio():
 
 def abrir_repositorio(caminho):
     try:
+        if not os.path.exists(caminho):
+            print(f"O caminho {caminho} não existe.")
+            return None
+        
         repositorio = Repo(caminho)
-        print(f"Repositório carregado em: {repositorio.working_tree_dir}")
+        
+        if not repositorio.git_dir:
+            print(f"O caminho {caminho} não é um repositório Git válido.")
+            return None
+        
+        print(f"Repositório carregado com sucesso em: {repositorio.working_tree_dir}")
         return repositorio
     except git.exc.InvalidGitRepositoryError:
-        print("Certifique-se de que este é um repositório git válido.")
+        print(f"Erro: Repositório inválido - {e}")
         return None
     except Exception as e:
         print(f"Erro ao abrir o repositório: {e}")

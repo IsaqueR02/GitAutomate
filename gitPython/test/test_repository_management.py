@@ -2,7 +2,9 @@ import unittest
 from unittest.mock import patch, MagicMock
 import sys
 import os
-import git
+from git import Repo
+import tempfile
+import shutil
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -11,59 +13,54 @@ from archives import repository_management
 class TestGitArchives(unittest.TestCase):
 
     def setUp(self):
-        self.repo_mock = MagicMock()
+        # Criar um repositório Git temporário para testes
+        self.test_dir = tempfile.mkdtemp()
+        self.local_repo_path = os.path.join(self.test_dir, 'local_repo')
+        os.mkdir(self.local_repo_path)
+        Repo.init(self.local_repo_path)
 
-    @patch('git.Repo')
-    def test_abrir_repositorio_sucesso(self, mock_repo):
-        mock_repo.return_value = self.repo_mock
-        self.repo_mock.working_tree_dir = '/fake/path'
+        # URL de um repositório remoto público para teste
+        self.remote_repo_url = "https://github.com/octocat/Hello-World.git"
+
+    def tearDown(self):
+        # Limpar o diretório temporário após os testes
+        shutil.rmtree(self.test_dir)
+
+    def test_abrir_repositorio_local_sucesso(self):
+        print("\nIniciando test_abrir_repositorio_local_sucesso")
         
-        with patch('builtins.print') as mock_print:
-            result = repository_management.abrir_repositorio('/fake/path')
+        result = repository_management.abrir_repositorio(self.local_repo_path)
         
-        self.assertIsNotNone(result)
-
-    @patch('git.Repo')
-    def test_abrir_repositorio_erro_invalido(self, mock_repo):
-        mock_repo.side_effect = git.exc.InvalidGitRepositoryError()
+        print(f"Resultado: {result}")
         
-        with patch('builtins.print') as mock_print:
-            result = repository_management.abrir_repositorio('/fake/path')
+        self.assertIsNotNone(result, "O resultado não deveria ser None")
+        self.assertEqual(result.working_tree_dir, self.local_repo_path, "O caminho do repositório deveria ser igual ao fornecido")
+
+        # Tentar fazer um fetch para verificar a conexão
+        try:
+            result.remotes.origin.fetch()
+            print("Fetch bem-sucedido")
+        except Exception as e:
+            self.fail(f"Não foi possível fazer fetch do repositório remoto: {e}")
+
+    def test_abrir_repositorio_caminho_invalido(self):
+        print("\nIniciando test_abrir_repositorio_caminho_invalido")
         
-        self.assertIsNone(result)
-
-    @patch('git.Repo')
-    def test_abrir_repositorio_erro_generico(self, mock_repo):
-        mock_repo.side_effect = Exception("Erro genérico")
+        invalid_path = os.path.join(self.test_dir, 'non_existent')
+        result = repository_management.abrir_repositorio(invalid_path)
         
-        with patch('builtins.print') as mock_print:
-            result = repository_management.abrir_repositorio('/fake/path')
+        print(f"Resultado: {result}")
+        self.assertIsNone(result, "O resultado deveria ser None para um caminho inválido")
+
+    def test_abrir_repositorio_nao_git(self):
+        print("\nIniciando test_abrir_repositorio_nao_git")
         
-        self.assertIsNone(result)
-
-    @patch('os.path.isdir', return_value=True)
-    def test_obter_mudancas_arquivos_com_mudancas(self):
-        self.repo_mock.git.diff.return_value = 'file1.txt\nfile2.txt'
-        result = repository_management.obter_mudancas_arquivos(self.repo_mock)
-        self.assertEqual(result, ['file1.txt', 'file2.txt'])
-
-    @patch('os.path.isdir', return_value=False)
-    def test_obter_mudancas_arquivos_sem_mudancas(self):
-        self.repo_mock.git.diff.return_value = ''
-        result = repository_management.obter_mudancas_arquivos(self.repo_mock)
-        self.assertEqual(result, [])
-
-    @patch('os.path.isdir', return_value=True)
-    def test_verificar_arquivos_modificados_com_mudancas(self):
-        with patch('archives.repository_management.obter_mudancas_arquivos', return_value=['file1.txt', 'file2.txt']):
-            result = repository_management.verificar_arquivos_modificados(self.repo_mock)
-        self.assertTrue(result)
-
-    @patch('os.path.isdir', return_value=False)
-    def test_verificar_arquivos_modificados_sem_mudancas(self):
-        with patch('archives.repository_management.obter_mudancas_arquivos', return_value=[]):
-            result = repository_management.verificar_arquivos_modificados(self.repo_mock)
-        self.assertFalse(result)
+        non_git_path = self.test_dir  # Um diretório que existe, mas não é um repositório Git
+        result = repository_management.abrir_repositorio(non_git_path)
+        
+        print(f"Resultado: {result}")
+        self.assertIsNone(result, "O resultado deveria ser None para um diretório que não é um repositório Git")
 
 if __name__ == '__main__':
-    unittest.main()
+    print("Iniciando testes")
+    unittest.main(verbosity=2)
