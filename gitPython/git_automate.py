@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import sys
 from colorama import init, Fore, Style
@@ -61,7 +62,7 @@ def commit_arquivos(repositorio):
         return
     
     # Gerar mensagem de commit
-    mensagem_commit = commited(arquivos_alterados)
+    mensagem_commit = commited(arquivos_alterados, repositorio)
     
     # Mostrar mensagem de commit e pedir confirmação
     print(f"\nMensagem de commit escolhida: {mensagem_commit}")
@@ -82,9 +83,10 @@ def commit_arquivos(repositorio):
         except GitCommandError as e:
             print(f"Erro durante o commit: {e}")
 
-def principal(repositorio):
+def principal(repositorio, ):
     try:
-        repo_path = status.selecionar_repositorio()
+        repo_path = os.getcwd()
+        status.selecionar_repositorio
         repositorio = Repo(repo_path)
         logging.info(f"Repositório selecionado: {repo_path}")
     # Na função principal
@@ -115,10 +117,9 @@ def principal(repositorio):
         doPush.realizar_push(repositorio)
 
 if __name__ == "__main__":
-    principal(repositorio=None)
+    principal(Repo)
     
     ## Pontos a serem melhorados:
-    # 1. Adicionar tratamento de exceções para o caso de falhas no push ou pull.
     # 2. Melhorar o gerenciamento de branches, permitindo ao usuário escolher a branch de destino.
     # 3. Incluir uma opção para desfazer o último commit, caso necessário.
     # 4. Melhorar o direncionamento do add, permitindo adicionar arquivos específicos ou diretórios.

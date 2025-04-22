@@ -21,6 +21,7 @@ def verificar_arquivos_modificados(repositorio):
         return True
 
 def selecionar_repositorio():
+    print("Diretório atual:", os.getcwd())
     repos = [d for d in os.listdir() if os.path.isdir(d) and os.path.exists(os.path.join(d, '.git'))]
     if not repos:
         print(Fore.RED + "Nenhum repositório Git encontrado no diretório atual." + Style.RESET_ALL)

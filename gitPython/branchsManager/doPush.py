@@ -1,11 +1,10 @@
 from email.quoprimime import quote
-from getpass import getpass
 from colorama import Fore, Style
 import git
+import keyring
 
 from branchsManager.changesManagement import verificar_commits_remotos
-from branchsManager.doPull import realizar_pull
-import git_automate as executar_comando
+from branchsManager.doPull import realizar_pull, get_credentials
 
 def realizar_push(repositorio):
     opcional = input("Deseja fazer pull antes do push? (sim/não): ").lower()
@@ -18,11 +17,9 @@ def realizar_push(repositorio):
 
     try:
         if repositorio.remote().url.startswith('https'):
-            username = input("Digite seu nome de usuário: ")
-            password = getpass.getpass("Digite sua senha: ")
-            encoded_password = quote(password)
+            username, token = get_credentials()
             remote_url = repositorio.remote().url
-            authenticated_url = remote_url.replace('https://', f'https://{username}:{encoded_password}@')
+            authenticated_url = remote_url.replace('https://', f'https://{username}:{token}@')
             repositorio.git.push(authenticated_url)
         else:
             repositorio.git.push()
@@ -30,7 +27,7 @@ def realizar_push(repositorio):
     except git.GitCommandError as e:
         print(Fore.RED + f"Erro ao realizar push: {e}" + Style.RESET_ALL)
     else:
-        print("Push cancelado. Suas mudanças estão commitadas localmente.")
+        print("Push realizado. Suas mudanças foram enviadas para o remoto.")
 
     if verificar_commits_remotos(repositorio) == True:
         print("Atenção: Há commits no remoto que não estão no seu repositório local.")

@@ -1,7 +1,9 @@
+import os
+import sys
 from colorama import Fore, Style
 
-
-from gitPython.archives.repository_management import obter_mudancas_arquivos
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from archives.repository_management import obter_mudancas_arquivos 
 
 
 def gerar_mensagem_commit(mudancas_arquivos, repositorio):
