@@ -1,4 +1,6 @@
+import logging
 import traceback
+from colorama import Fore, Style
 import git
 
 def verificar_branchs_remotas(repositorio):
@@ -9,16 +11,16 @@ def verificar_branchs_remotas(repositorio):
         branches_remotas = [ref.remote_head for ref in repositorio.remote().refs if not ref.remote_head.startswith('HEAD')]
         
         if not branches_remotas:
-            print("Nenhuma branch remota encontrada.")
+            print(Fore.YELLOW + "Nenhuma branch remota encontrada." + Style.RESET_ALL)
             criar_branch = input("Deseja criar uma nova branch? (sim/não): ").lower()
             if criar_branch in ['sim', 's']:
+                tipo_branch = input("Tipo de branch (task/feature/main): ").lower()
                 nome_branch = input("Digite o nome da nova branch: ")
-                repositorio.git.checkout('-b', nome_branch)
-                print(f"Branch '{nome_branch}' criada com sucesso.")
-            else:
-                # Se não houver branches remotas e o usuário não quiser criar uma nova branch, o script termina
-                print("Nenhuma branch remota encontrada e nenhuma nova branch criada.")
-                return None
+                nome_completo = f"{tipo_branch}/{nome_branch}"
+                repositorio.git.checkout('-b', nome_completo)
+                print(Fore.GREEN + f"Branch '{nome_completo}' criada com sucesso." + Style.RESET_ALL)
+                logging.info(f"Nova branch criada: {nome_completo}")
+                return nome_completo
 
         print("Branches remotas encontradas:")
         for i, branch in enumerate(branches_remotas, 1):

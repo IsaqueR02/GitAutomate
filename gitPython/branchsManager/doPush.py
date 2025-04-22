@@ -1,3 +1,6 @@
+from email.quoprimime import quote
+from getpass import getpass
+from colorama import Fore, Style
 import git
 
 from branchsManager.changesManagement import verificar_commits_remotos
@@ -14,16 +17,18 @@ def realizar_push(repositorio):
         return
 
     try:
-        print("Fazendo push das mudanças para o remoto...")
-        saida_push, erro_push = executar_comando("git push")
-        if erro_push:
-            print(f"Erro durante o push: {erro_push}")
-            return
-        print(saida_push)
-        print("Mudanças enviadas com sucesso.")
-    except Exception as e:
-        git.Git().set_persistent_git_options(verbose=True)
-        print(f"Erro durante o push: {e}")
+        if repositorio.remote().url.startswith('https'):
+            username = input("Digite seu nome de usuário: ")
+            password = getpass.getpass("Digite sua senha: ")
+            encoded_password = quote(password)
+            remote_url = repositorio.remote().url
+            authenticated_url = remote_url.replace('https://', f'https://{username}:{encoded_password}@')
+            repositorio.git.push(authenticated_url)
+        else:
+            repositorio.git.push()
+        print(Fore.GREEN + "Push realizado com sucesso." + Style.RESET_ALL)
+    except git.GitCommandError as e:
+        print(Fore.RED + f"Erro ao realizar push: {e}" + Style.RESET_ALL)
     else:
         print("Push cancelado. Suas mudanças estão commitadas localmente.")
 

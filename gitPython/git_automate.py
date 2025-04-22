@@ -1,6 +1,7 @@
+import logging
 import subprocess
-import os
 import sys
+from colorama import init, Fore, Style
 from git import Repo
 from git.exc import GitCommandError
 
@@ -10,6 +11,8 @@ from gitCommits.commitadd_management import gerar_mensagem_commit as commited
 import branchsManager.changesManagement as changes_management
 import branchsManager.doPush as doPush
 import branchsManager.doPull as doPull
+
+init(autoreset=True)
 
 def executar_comando(comando):
     processo = subprocess.Popen(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -23,6 +26,7 @@ def executar_comando(comando):
     return saida.decode('utf-8'), erro.decode('utf-8'), processo.returncode
 
 def menu_opcoes(repositorio):
+
     while True:
         print("\nEscolha uma opção:")
         print("1. Commit")
@@ -30,9 +34,8 @@ def menu_opcoes(repositorio):
         print("3. Pull")
         print("4. Desfazer Últimos Commits")
         print("0. Sair")
-        
+
         escolha = input("Digite sua escolha: ")
-        
         if escolha == '1':
             commit_arquivos(repositorio)  # Chama sua função de commit
             break  # Saia do loop após executar
@@ -72,21 +75,25 @@ def commit_arquivos(repositorio):
         else:
             print("Resposta inválida. Por favor, digite 'sim' ou 'não'.")
     
-    # Commit das mudanças
-    try:
-        repositorio.index.commit(mensagem_commit)
-        print("Mudanças commitadas com sucesso.")
-    except GitCommandError as e:
-        print(f"Erro durante o commit: {e}")
+        # Commit das mudanças
+        try:
+            repositorio.index.commit(mensagem_commit)
+            print("Mudanças commitadas com sucesso.")
+        except GitCommandError as e:
+            print(f"Erro durante o commit: {e}")
 
 def principal(repositorio):
     try:
-        repositorio = Repo(os.getcwd())
+        repo_path = status.selecionar_repositorio()
+        repositorio = Repo(repo_path)
+        logging.info(f"Repositório selecionado: {repo_path}")
+    # Na função principal
     except Exception as e:
-        print(f"Erro ao abrir o repositório git: {e}")
+        logging.error(f"Erro ao abrir o repositório git: {e}")
+        print(Fore.RED + f"Erro ao abrir o repositório git: {e}" + Style.RESET_ALL)
         print("Certifique-se de que este é um repositório git válido.")
         sys.exit(1)
-        
+
     branch_selecionada = changes_management.verificar_branchs_remotas(repositorio)
     if not branch_selecionada:
         print("Nenhuma branch selecionada ou criada. Encerrando o script.")
