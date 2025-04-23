@@ -7,7 +7,7 @@ def get_credentials():
     
     if not username or not token:
         username = input("Digite seu nome de usuário do Bitbucket: ")
-        token = input("Digite seu token de acesso do Bitbucket: ")
+        token = input("Digite sua senha de acesso do Bitbucket: ")
         
         keyring.set_password("bitbucket", "username", username)
         keyring.set_password("bitbucket", "token", token)
