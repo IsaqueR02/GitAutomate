@@ -29,25 +29,28 @@ def executar_comando(comando):
 def menu_opcoes(repositorio):
 
     while True:
-        print("\nEscolha uma opção:")
-        print("1. Commit")
-        print("2. Push")
-        print("3. Pull")
-        print("4. Desfazer Últimos Commits")
+        print("1. Verificar status")
+        print("2. Adicionar mudanças (git add)")
+        print("3. Commit")
+        print("4. Push")
+        print("5. Pull")
+        print("6. Desfazer Últimos Commits")
         print("0. Sair")
 
         escolha = input("Digite sua escolha: ")
         if escolha == '1':
-            commit_arquivos(repositorio)  # Chama sua função de commit
-            break  # Saia do loop após executar
+            status.verificar_arquivos_modificados(repositorio)
         elif escolha == '2':
-            doPush.realizar_push(repositorio)  # Chama sua função de push
+            print("Executando 'git add .'")
+            executar_comando("git add .")
         elif escolha == '3':
-            doPull.realizar_pull(repositorio)  # Chama sua função de pull
-            break  # Saia do loop após executar
+            commit_arquivos(repositorio)
         elif escolha == '4':
-            descommited(repositorio)  # Chama sua função para desfazer commits
-            break  # Saia do loop após executar
+            doPush.realizar_push(repositorio)
+        elif escolha == '5':
+            doPull.realizar_pull(repositorio)
+        elif escolha == '6':
+            descommited(repositorio)
         elif escolha == '0':
             print("Saindo do programa.")
             break
@@ -75,6 +78,12 @@ def commit_arquivos(repositorio):
             break
         else:
             print("Resposta inválida. Por favor, digite 'sim' ou 'não'.")
+        
+        # Pedir confirmação antes do push
+    if confirmacao in ['sim', 's']:
+        entrada_usuario = input("\nVocê quer fazer push das mudanças? (sim/não): ").lower()
+        if entrada_usuario in ['sim', 's', 'não', 'nao', 'n']:
+            doPush.realizar_push(repositorio)
     
         # Commit das mudanças
         try:
@@ -86,10 +95,8 @@ def commit_arquivos(repositorio):
 def principal(repositorio, ):
     try:
         repo_path = os.getcwd()
-        status.selecionar_repositorio
         repositorio = Repo(repo_path)
         logging.info(f"Repositório selecionado: {repo_path}")
-    # Na função principal
     except Exception as e:
         logging.error(f"Erro ao abrir o repositório git: {e}")
         print(Fore.RED + f"Erro ao abrir o repositório git: {e}" + Style.RESET_ALL)
@@ -101,20 +108,7 @@ def principal(repositorio, ):
         print("Nenhuma branch selecionada ou criada. Encerrando o script.")
         return
 
-    if not status.verificar_arquivos_modificados(repositorio):
-        print("Não há arquivos modificados para commit.")
-        return
-
-    # Git add .
-    print("Executando 'git add .'")
-    executar_comando("git add .")
-        
     menu_opcoes(repositorio)
-
-    # Pedir confirmação antes do push
-    entrada_usuario = input("\nVocê quer fazer push das mudanças? (sim/não): ").lower()
-    if entrada_usuario in ['sim', 's', 'não', 'nao', 'n']:
-        doPush.realizar_push(repositorio)
 
 if __name__ == "__main__":
     principal(Repo)
