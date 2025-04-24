@@ -106,6 +106,5 @@ if __name__ == "__main__":
     # 5. Melhorar a geração de mensagens de commit, talvez usando um modelo de IA ou análise de mudanças.
     # 7. Melhorar a interface do usuário, talvez inserindo mais interações ou estilo gráfico.
     # 9. Implementar um sistema de logs para registrar as ações realizadas pelo script.
-    # 10. Inserir uma opção para visualizar o histórico de commits antes de fazer o push.
     # 11. Adicionar suporte para repositórios privados, incluindo autenticação.
     # 12. Melhorar a documentação do código e criar um README para o projeto.

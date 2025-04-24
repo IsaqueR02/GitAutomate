@@ -14,20 +14,21 @@ def verificar_arquivos_modificados(repositorio):
     # Verifica se há arquivos modificados no repositório
     arquivos_modificados = obter_mudancas_arquivos(repositorio)
     arquivos_nao_rastreados = repositorio.untracked_files
-    todos_arquivos = arquivos_modificados + arquivos_nao_rastreados
+    todos_arquivos = (arquivos_modificados + arquivos_nao_rastreados)
     if not todos_arquivos:
         print(Fore.YELLOW + "Não há arquivos modificados ou novos para adicionar." + Style.RESET_ALL)
     elif arquivos_modificados:
         print(Fore.CYAN + "Arquivos modificados:" + Style.RESET_ALL)
-        for i, arquivo in enumerate(arquivos_modificados):
+        for arquivo in enumerate(arquivos_modificados):
             print(f"- {arquivo}")
+    elif not arquivos_modificados:
+        print(Fore.YELLOW + "Não há arquivos modificados para adicionar." + Style.RESET_ALL)
     
     elif arquivos_nao_rastreados:
         print(Fore.CYAN + "Arquivos novos:" + Style.RESET_ALL)
-        for i, arquivo in enumerate(arquivos_nao_rastreados):
+        for arquivo in enumerate(arquivos_nao_rastreados):
             print(f"- {arquivo}")
-    
-    if not arquivos_nao_rastreados:
+    elif not arquivos_nao_rastreados:
         print(Fore.YELLOW + "Não há arquivos novos para adicionar." + Style.RESET_ALL)
     
     return todos_arquivos
@@ -47,22 +48,27 @@ def change_repository_environment(repositorio):
     choice = input("Digite sua escolha (1 ou 2): ")
     
     if choice == '1':
-        get_credentials(platform='github')
+        platform='github'
         new_remote = 'https://github.com/'
     elif choice == '2':
-        get_credentials(platform='bitbucket')
+        platform='bitbucket'
         new_remote = 'https://bitbucket.org/'
     else:
         print("Escolha inválida.")
         return
 
-    get_credentials(choice)
+    username, token = get_credentials(platform)
+    if not username or not token:
+        print("Credenciais não configuradas. Configure-as primeiro.")
+        return
+    
     repo_name = input("Digite o nome do repositório (usuario/repositorio): ")
     new_url = f"{new_remote}{repo_name}.git"
 
     try:
         repositorio.remote().set_url(new_url)
         print(f"Repositório alterado para {get_credentials(choice).capitalize()} com sucesso.")
+        print(f"Nova URL: {new_url}")
     except Exception as e:
         print(f"Erro ao alterar o repositório: {e}")
 

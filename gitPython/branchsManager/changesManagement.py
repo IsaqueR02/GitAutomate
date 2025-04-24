@@ -6,8 +6,10 @@ import git
 def verificar_branchs_remotas(repositorio):
     try:
         # Verifica se há branches remotas
-        print("Atualizando informações do repositório remoto...")
+        print("\nAtualizando informações do repositório remoto...")
         repositorio.remotes.origin.fetch()
+        
+        branches_locais = [branch.name for branch in repositorio.branches]
         branches_remotas = [ref.remote_head for ref in repositorio.remote().refs if not ref.remote_head.startswith('HEAD')]
         
         if not branches_remotas:
@@ -22,44 +24,61 @@ def verificar_branchs_remotas(repositorio):
                 logging.info(f"Nova branch criada: {nome_completo}")
                 return nome_completo
 
-        print("Branches remotas encontradas:")
-        for i, branch in enumerate(branches_remotas, 1):
-            print(f"{i}. {branch}")
+        todas_branches = list(set(branches_locais + branches_remotas))
+        todas_branches.sort()
+
+        print("\nBranches disponíveis:")
+        for i, branch in enumerate(todas_branches, 1):
+            remote = "- R" if branch in branches_remotas else " "
+            print(f"{i}. {branch} {remote}")
 
         # Pede ao usuário para selecionar uma branch
         while True:
             try:
                 escolha = int(input("Selecione o número da branch desejada (ou 0 para criar uma nova): "))
-                if 0 <= escolha <= len(branches_remotas):
+                if 0 <= escolha <= len(todas_branches):
                     break
                 print("Escolha inválida. Por favor, tente novamente.")
             except ValueError:
                 print("Por favor, insira um número válido.")
 
         if escolha == 0:
-            nome_branch = input("Digite o nome da nova branch: ")
-            repositorio.git.checkout('-b', nome_branch)
-            print(f"Nova branch '{nome_branch}' criada e selecionada.")
-            return nome_branch
+            create_new_branch(repositorio)
         else:
-            branch_selecionada = branches_remotas[escolha - 1]
-            repositorio.git.checkout(branch_selecionada)
-            print(f"Branch '{branch_selecionada}' selecionada com sucesso.")
-            
-            # Verifica se a branch já existe localmente
-            if branch_selecionada in [branch.name for branch in repositorio.branches]:
-                repositorio.git.checkout(branch_selecionada)
-                repositorio.git.pull('origin', branch_selecionada)
-            else:
-                # Cria a branch local rastreando a remota
-                repositorio.git.checkout('-b', branch_selecionada, f'origin/{branch_selecionada}')
-                
-            print(f"Branch '{branch_selecionada}' selecionada e atualizada localmente.")
+            branch_selecionada = todas_branches[escolha - 1]
+            return checkout_e_atualizar_branch(repositorio, branch_selecionada, branches_locais, branches_remotas)
         
     except Exception as e:
         print(f"Erro ao verificar branches remotas: {e}")
         return False
-    return True
+
+def checkout_e_atualizar_branch(repositorio, branch, branches_locais, branches_remotas):
+    if branch in branches_locais:
+        repositorio.git.checkout(branch)
+        if branch in branches_remotas:
+            print(f"Branch '{branch}' existe localmente e remotamente.")
+            if input("Deseja atualizar a branch local com a remota? (s/n): ").lower() == 's':
+                repositorio.git.pull('origin', branch)
+        else:
+            print(f"Branch '{branch}' existe apenas localmente.")
+            if input("Deseja fazer push desta branch para o remoto? (s/n): ").lower() == 's':
+                repositorio.git.push('--set-upstream', 'origin', branch)
+    elif branch in branches_remotas:
+        print(f"Branch '{branch}' existe apenas remotamente.")
+        repositorio.git.checkout('-b', branch, f'origin/{branch}')
+        print(f"Branch '{branch}' criada localmente e configurada para rastrear a branch remota.")
+    else:
+        print(f"Erro: A branch '{branch}' não foi encontrada localmente nem remotamente.")
+        return False
+    
+    print(f"Branch '{branch}' selecionada e atualizada.")
+    return branch
+
+def create_new_branch(repositorio):
+    nome_branch = input("Digite o nome da nova branch: ")
+    repositorio.git.checkout('-b', nome_branch)
+    print(f"Nova branch '{nome_branch}' criada e selecionada.")
+    return nome_branch
 
 def verificar_commits_remotos(repositorio):
     try:
