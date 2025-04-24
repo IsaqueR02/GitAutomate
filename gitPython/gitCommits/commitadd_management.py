@@ -132,9 +132,14 @@ def gerar_mensagem_commit():
 
 # Commit das mudanças
 def commit_workflow(repositorio):
+    
+    if not repositorio.is_dirty() and not repositorio.untracked_files:
+        print("Não há mudanças para commit.")
+        return
+    
     arquivos_selecionados = adicionar_arquivos_especificos(repositorio)
     if not arquivos_selecionados:
-        print("Não há mudanças para commit.")
+        print("Nenhum arquivo selecionado para commit.")
         return
 
     mensagem_commit = gerar_mensagem_commit()
