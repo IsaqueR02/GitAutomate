@@ -1,10 +1,9 @@
-from email.quoprimime import quote
 from colorama import Fore, Style
 import git
-import keyring
 
+from archives.repository_crypted import get_credentials
 from branchsManager.changesManagement import verificar_commits_remotos
-from branchsManager.doPull import realizar_pull, get_credentials
+from branchsManager.doPull import realizar_pull
 
 def realizar_push(repositorio):
     opcional = input("Deseja fazer pull antes do push? (sim/não): ").lower()
@@ -17,7 +16,8 @@ def realizar_push(repositorio):
 
     try:
         if repositorio.remote().url.startswith('https'):
-            username, token = get_credentials()
+            platform = 'github' if 'github.com' in repositorio.remote().url else 'bitbucket'
+            username, token = get_credentials(platform)
             remote_url = repositorio.remote().url
             authenticated_url = remote_url.replace('https://', f'https://{username}:{token}@')
             repositorio.git.push(authenticated_url)

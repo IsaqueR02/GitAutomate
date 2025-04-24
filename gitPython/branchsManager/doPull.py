@@ -1,29 +1,15 @@
-import keyring
+from archives.repository_crypted import get_credentials
 from git_automate import executar_comando
-
-def get_credentials():
-    username = keyring.get_password("bitbucket", "username")
-    token = keyring.get_password("bitbucket", "token")
-    
-    if not username or not token:
-        username = input("Digite seu nome de usuário do Bitbucket: ")
-        token = input("Digite sua senha de acesso do Bitbucket: ")
-        
-        keyring.set_password("bitbucket", "username", username)
-        keyring.set_password("bitbucket", "token", token)
-    
-    return username, token
 
 def realizar_pull(repositorio):
     try:
         print("Fazendo pull das mudanças do remoto...")
-        username, token = get_credentials()
+        platform = 'github' if 'github.com' in repositorio.remote().url else 'bitbucket'
+        username, token = get_credentials(platform)
         remote_url = repositorio.remote().url
         authenticated_url = remote_url.replace('https://', f'https://{username}:{token}@')
         
-        
-        print("Fazendo pull das mudanças do remoto...")
-        saida_pull, erro_pull = executar_comando("git pull")
+        saida_pull, erro_pull, _ = executar_comando(f"git pull {authenticated_url}")
         if erro_pull:
             print(f"Erro durante o pull: {erro_pull}")
             return False
