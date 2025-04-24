@@ -61,10 +61,10 @@ def menu_opcoes(repositorio):
         elif escolha == '7':
             repository(repositorio)
         elif escolha == '8':
-            input("Digite a plataforma do repositório: ").lower()
             print("1. GitHub")
             print("2. Bitbucket")
-            get_credentials
+            plataforma = input("Digite a plataforma do repositório: ").lower()
+            get_credentials(plataforma)
         elif escolha == '0':
             print("Saindo do programa.")
             break
