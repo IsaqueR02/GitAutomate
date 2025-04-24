@@ -9,7 +9,6 @@ from archives.repository_management import verificar_arquivos_modificados
 def adicionar_arquivos_especificos(repositorio):
     arquivos_modificados = verificar_arquivos_modificados(repositorio)
     if not arquivos_modificados:
-        print("Não há arquivos modificados para adicionar.")
         return
     
     arquivos_selecionados = []

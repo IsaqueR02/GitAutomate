@@ -14,20 +14,21 @@ def verificar_arquivos_modificados(repositorio):
     # Verifica se há arquivos modificados no repositório
     arquivos_modificados = obter_mudancas_arquivos(repositorio)
     arquivos_nao_rastreados = repositorio.untracked_files
-    todos_arquivos = arquivos_modificados + arquivos_nao_rastreados
+    todos_arquivos = (arquivos_modificados + arquivos_nao_rastreados)
     if not todos_arquivos:
         print(Fore.YELLOW + "Não há arquivos modificados ou novos para adicionar." + Style.RESET_ALL)
     elif arquivos_modificados:
         print(Fore.CYAN + "Arquivos modificados:" + Style.RESET_ALL)
-        for i, arquivo in enumerate(arquivos_modificados):
+        for arquivo in enumerate(arquivos_modificados):
             print(f"- {arquivo}")
+    elif not arquivos_modificados:
+        print(Fore.YELLOW + "Não há arquivos modificados para adicionar." + Style.RESET_ALL)
     
     elif arquivos_nao_rastreados:
         print(Fore.CYAN + "Arquivos novos:" + Style.RESET_ALL)
-        for i, arquivo in enumerate(arquivos_nao_rastreados):
+        for arquivo in enumerate(arquivos_nao_rastreados):
             print(f"- {arquivo}")
-    
-    if not arquivos_nao_rastreados:
+    elif not arquivos_nao_rastreados:
         print(Fore.YELLOW + "Não há arquivos novos para adicionar." + Style.RESET_ALL)
     
     return todos_arquivos
